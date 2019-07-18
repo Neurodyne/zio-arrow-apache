@@ -2,7 +2,6 @@ package zioSerdes
 
 import org.apache.commons.lang3.SerializationUtils
 import zio.{ Chunk }
-import zioSerdesPkg._
 
 case class StreamData[A](din: Chunk[A]) extends AnyRef with Serializable
 
@@ -21,7 +20,7 @@ object Serdes {
       Chunk.fromArray(SerializationUtils.serialize(din))
 
     def deserialize[A](din: Chunk[Byte]): StreamData[A] =
-      StreamData(Chunk(SerializationUtils.deserialize(din)))
+      SerializationUtils.deserialize(din.toArray)
 
   }
 }
