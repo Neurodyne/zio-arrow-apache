@@ -2,6 +2,7 @@ val ApacheSerdresVersion = "3.9"
 val ZioVersion           = "1.0.0-RC10-1"
 val Specs2Version        = "4.6.0"
 val SimulaVersion        = "0.19.0"
+//val KindProjVersion      = "0.10.3"
 
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -18,6 +19,7 @@ lazy val root = (project in file("."))
       "dev.zio"              %% "zio"          % ZioVersion,
       "org.specs2"           %% "specs2-core"  % Specs2Version % "test",
       "com.github.mpilquist" %% "simulacrum"   % SimulaVersion
+      //"org.typelevel"        %% "kind-projector" % KindProjVersion
     )
   )
 

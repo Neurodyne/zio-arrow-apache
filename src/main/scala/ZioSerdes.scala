@@ -1,6 +1,5 @@
 package zioSerdes
 
-// import org.apache.commons.lang3.SerializationUtils.{serialize, deserialize}
 import org.apache.commons.lang3.SerializationUtils
 
 import zio.{ Chunk, Task, ZIO }
@@ -16,6 +15,8 @@ import zioSerdesPkg._
   // @op("<<<") def deserialize[A, B](din: F[B]): F[A]
 } */
 
+case class streamData[A](din: Chunk[A]) extends AnyRef with Serializable
+
 sealed abstract class Serdes[F[_]] {
 
   // def serialize[A, B](din: F[A]): G[B]
@@ -29,10 +30,10 @@ sealed abstract class Serdes[F[_]] {
 
 object Serdes {
 
-  implicit val chunkSerdes = new Serdes[SChunk] {
+  implicit val chunkSerdes = new Serdes[streamData] {
 
     // def serialize[A, B] (din:Chunk[A]):Task[B] = ZIO.effect(SerializationUtils.serialize(din))
-    def serialize[A](din: SChunk[A]): Chunk[Byte] =
+    def serialize[A](din: streamData[A]): Chunk[Byte] =
       Chunk.fromArray(SerializationUtils.serialize(din))
     /* din.map ( r =>
         // ZIO.effect(SerializationUtils.serialize(r))

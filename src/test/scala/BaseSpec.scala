@@ -5,7 +5,6 @@ import zio.{ Chunk, DefaultRuntime }
 
 import zioSerdesPkg._
 import zioSerdes._
-// import zioSerdes.Serdes._
 
 class BaseSpec extends Specification with DefaultRuntime {
 
@@ -19,7 +18,8 @@ class BaseSpec extends Specification with DefaultRuntime {
   def serBArr = {
 
     val arr: BArr = Array(1, 2, 3)
-    val data      = SChunk[BArr].fromArray(arr)
+    val chunk     = Chunk.fromArray(arr)
+    val data      = streamData(chunk)
 
     val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(data)
 
