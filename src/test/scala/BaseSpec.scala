@@ -34,18 +34,10 @@ class BaseSpec extends Specification with DefaultRuntime {
     val chunk     = Chunk.fromArray(arr)
     val data      = StreamData(chunk)
 
-    /* unsafeRun (
-      for {
-        exp <- Serdes.chunkSerdes.serialize(data)
-        act <- Serdes.chunkSerdes.deserialize(Chunk(exp))
-
-      } yield exp === act
-    ) */
-
-    val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(data)
-
+    val bytes: Chunk[Byte]    = Serdes.chunkSerdes.serialize(data)
     val out: StreamData[Byte] = Serdes.chunkSerdes.deserialize(bytes)
 
-    zioSerdesPkg.eqv(bytes.toArray, out.din.toArray) === true
+    zioSerdesPkg.eqv(arr, out.din.toArray) === true
+    //Chunk(arr) === out.din // Chunk comparison doesn't work!
   }
 }
