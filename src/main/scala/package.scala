@@ -4,7 +4,6 @@ case class streamData[A](din: Chunk[A]) extends AnyRef with Serializable
 
 package object zioSerdesPkg {
 
-  type BArr      = Array[Byte]
-  type SChunk[A] = Chunk[A] with Serializable
+  type BArr = Array[Byte]
 
 }
