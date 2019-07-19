@@ -1,4 +1,6 @@
 val ApacheSerdresVersion = "3.9"
+val ParquetVersion       = "1.10.1"
+val HadoopVersion        = "3.2.0"
 val ZioVersion           = "1.0.0-RC10-1"
 val Specs2Version        = "4.6.0"
 
@@ -14,6 +16,8 @@ lazy val root = (project in file("."))
     maxErrors := 3,
     libraryDependencies ++= Seq(
       "org.apache.commons" % "commons-lang3" % ApacheSerdresVersion,
+      "org.apache.parquet" % "parquet-avro"  % ParquetVersion,
+      "org.apache.hadoop"  % "hadoop-common" % HadoopVersion,
       "dev.zio"            %% "zio"          % ZioVersion,
       "org.specs2"         %% "specs2-core"  % Specs2Version % "test"
     )

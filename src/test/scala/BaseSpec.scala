@@ -14,6 +14,8 @@ class BaseSpec extends Specification with DefaultRuntime {
     serialize byte array        $serBArr 
     deserialize byte array      $deserBArr 
 
+    serialize parqeut           $serParquet
+
     """
 
   def serBArr = {
@@ -40,4 +42,23 @@ class BaseSpec extends Specification with DefaultRuntime {
     zioSerdesPkg.eqv(arr, out.din.toArray) === true
     //Chunk(arr) === out.din // Chunk comparison doesn't work!
   }
+
+  def serParquet = {
+    import ParquetPkg._
+    import ParquetReader._
+
+    // Read parquet data
+    val path = "/tmp/hello.pq"
+
+    val rows: Chunk[TypeData] =
+      for {
+        frame <- Reader.getFrame(path)
+        data  <- Reader.getRows(frame)
+      } yield data
+
+    val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(rows)
+
+    true === true
+  }
+
 }
