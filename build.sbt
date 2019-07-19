@@ -5,21 +5,17 @@ val Specs2Version        = "4.6.0"
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.sonatypeRepo("snapshots")
 
-lazy val root = (project in file("."))
-  .settings(
-    organization := "Neurodyne",
-    name := "zio-serdes",
-    version := "0.0.1",
-    scalaVersion := "2.12.8",
-    maxErrors := 3,
-    libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-lang3" % ApacheSerdresVersion,
-      "dev.zio"            %% "zio"          % ZioVersion,
-      "org.specs2"         %% "specs2-core"  % Specs2Version % "test"
-    )
-  )
+organization := "Neurodyne"
+name := "zio-serdes"
+version := "0.0.1"
+scalaVersion := "2.12.8"
+maxErrors := 3
+libraryDependencies ++= Seq(
+  "org.apache.commons" % "commons-lang3" % ApacheSerdresVersion,
+  "dev.zio"            %% "zio"          % ZioVersion,
+  "org.specs2"         %% "specs2-core"  % Specs2Version % "test"
+)
 
-//scalacOptions in Test --= Seq(
 scalacOptions --= Seq(
   "-Xfatal-warnings"
 )

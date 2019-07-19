@@ -43,22 +43,20 @@ class BaseSpec extends Specification with DefaultRuntime {
     //Chunk(arr) === out.din // Chunk comparison doesn't work!
   }
 
-  def serParquet = {
-    import ParquetPkg._
-    import ParquetReader._
+  def serParquet =
+    //import ParquetPkg._
+    //import ParquetReader._
 
-    // Read parquet data
-    val path = "/tmp/hello.pq"
+    //// Read parquet data
+    //val path = "/tmp/hello.pq"
 
-    val rows: Chunk[TypeData] =
-      for {
-        frame <- Reader.getFrame(path)
-        data  <- Reader.getRows(frame)
-      } yield data
+    //val rows: Chunk[TypeData] =
+    //  for {
+    //    frame <- Reader.getFrame(path)
+    //    data  <- Reader.getRows(frame)
+    //  } yield data
 
-    val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(rows)
-
+    //val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(rows)
     true === true
-  }
 
 }
