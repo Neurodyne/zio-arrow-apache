@@ -11,26 +11,25 @@ class BaseSpec extends Specification with DefaultRuntime {
   def is = s2"""
 
   ZIO Serdes should      
-    serialize byte array        $serBArr 
-    deserialize byte array      $deserBArr 
+    scatter and gather byte array               $sgBArr 
+    serialize and deserialize byte array        $sdBArr
 
-    serialize parqeut           $serParquet
+    serialize and deserialize parqeut           
 
     """
 
-  def serBArr = {
+  def sgBArr = {
 
     val arr: BArr = Array(1, 2, 3)
-    val chunk     = Chunk.fromArray(arr)
-    val data      = StreamData(chunk)
 
-    val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(data)
+    val bytes: BArr = Serdes.scatter(arr)
+    val out: BArr   = Serdes.gather(bytes)
 
-    true === true
+    eqv(arr, out) === true
 
   }
 
-  def deserBArr = {
+  def sdBArr = {
 
     val arr: BArr = Array(1, 2, 3)
     val chunk     = Chunk.fromArray(arr)

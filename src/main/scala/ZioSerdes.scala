@@ -1,7 +1,8 @@
 package zioSerdes
 
-import org.apache.commons.lang3.SerializationUtils
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
 import zio.{ Chunk }
+import zioSerdesPkg._
 
 case class StreamData[A](din: Chunk[A]) extends AnyRef with Serializable
 
@@ -14,13 +15,31 @@ sealed abstract class Serdes[F[_], G[_]] {
 
 object Serdes {
 
+  def scatter[A](value: A): BArr = {
+    val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+    val oos                           = new ObjectOutputStream(stream)
+    oos.writeObject(value)
+    oos.close()
+    stream.toByteArray
+  }
+
+  def gather[A](bytes: BArr): A = {
+    val ois   = new ObjectInputStream(new ByteArrayInputStream(bytes))
+    val value = ois.readObject
+    ois.close()
+    value.asInstanceOf[A]
+  }
+
   implicit val chunkSerdes = new Serdes[StreamData, Chunk] {
 
     def serialize[A](din: StreamData[A]): Chunk[Byte] =
-      Chunk.fromArray(SerializationUtils.serialize(din))
+      Chunk.fromArray(scatter(din))
 
-    def deserialize[A](din: Chunk[Byte]): StreamData[A] =
-      SerializationUtils.deserialize(din.toArray)
+    def deserialize[A](din: Chunk[Byte]): StreamData[A] = {
+      val bytes: BArr = din.toArray
+      StreamData(Chunk(gather(bytes)))
+
+    }
 
   }
 }
