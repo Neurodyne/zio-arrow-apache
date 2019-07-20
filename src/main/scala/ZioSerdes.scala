@@ -30,14 +30,14 @@ object Serdes {
     value.asInstanceOf[A]
   }
 
-  implicit val chunkSerdes = new Serdes[StreamData, Chunk] {
+  implicit val chunkSerdes = new Serdes[Chunk, Chunk] {
 
-    def serialize[A](din: StreamData[A]): Chunk[Byte] =
+    def serialize[A](din: Chunk[A]): Chunk[Byte] =
       Chunk.fromArray(scatter(din))
 
-    def deserialize[A](din: Chunk[Byte]): StreamData[A] = {
-      val bytes: BArr = din.toArray
-      StreamData(Chunk(gather(bytes)))
+    def deserialize[A](din: Chunk[Byte]): Chunk[A] = {
+      val tmp: Array[A] = gather(din.toArray)
+      Chunk.fromArray(tmp)
 
     }
 

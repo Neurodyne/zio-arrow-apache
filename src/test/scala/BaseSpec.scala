@@ -14,7 +14,7 @@ class BaseSpec extends Specification with DefaultRuntime {
     scatter and gather byte array               $sgBArr 
     serialize and deserialize byte array        $sdBArr
 
-    serialize and deserialize parqeut           
+    serialize and deserialize parqeut           $sgParquet
 
     """
 
@@ -33,29 +33,28 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val arr: BArr = Array(1, 2, 3)
     val chunk     = Chunk.fromArray(arr)
-    val data      = StreamData(chunk)
 
-    val bytes: Chunk[Byte]    = Serdes.chunkSerdes.serialize(data)
-    val out: StreamData[Byte] = Serdes.chunkSerdes.deserialize(bytes)
+    val bytes = Serdes.chunkSerdes.serialize(chunk)
+    val out   = Serdes.chunkSerdes.deserialize(bytes)
 
-    zioSerdesPkg.eqv(arr, out.din.toArray) === true
-    //Chunk(arr) === out.din // Chunk comparison doesn't work!
+    //zioSerdesPkg.eqv(arr, out.toArray) === true
+    Chunk.fromArray(arr) === out // Chunk comparison doesn't work!
   }
 
-  def serParquet =
-    //import ParquetPkg._
-    //import ParquetReader._
+  def sgParquet =
+    // import ParquetPkg._
+    // import ParquetReader._
 
-    //// Read parquet data
-    //val path = "/tmp/hello.pq"
+    // // Read parquet data
+    // val path = "/tmp/hello.pq"
 
-    //val rows: Chunk[TypeData] =
+    // val rows: Chunk[TypeData] =
     //  for {
     //    frame <- Reader.getFrame(path)
     //    data  <- Reader.getRows(frame)
     //  } yield data
 
-    //val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(rows)
+    // val bytes: Chunk[Byte] = Serdes.chunkSerdes.serialize(rows)
     true === true
 
 }
