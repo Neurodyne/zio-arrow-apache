@@ -3,8 +3,7 @@ package nettest
 import org.specs2._
 import zio.{ Chunk, DefaultRuntime }
 
-import zioSerdesPkg._
-import zioSerdes._
+import zio.serdes._
 
 class BaseSpec extends Specification with DefaultRuntime {
 
@@ -20,10 +19,13 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   def sgBArr = {
 
-    //val arr = Array(1, 2, 3)
+    val arr = Array(1, 2, 3)
+    val bytesArr =  Serdes.scatter[Array, Int](arr)
+    val outArr = Serdes.gather[Array, Int](bytesArr)
+
+    arr == outArr
 
     val s = Array("String")
-
     val bytes =  Serdes.scatter[Array, String](s)
     val out = Serdes.gather[Array, String](bytes)
 
@@ -36,8 +38,8 @@ class BaseSpec extends Specification with DefaultRuntime {
     val arr: Array[Int] = Array(1, 2, 3)
     val chunk     = Chunk.fromArray(arr)
 
-    val bytes = Serdes.chunkSerdes.serialize[Int](chunk)
-    val out   = Serdes.chunkSerdes.deserialize[Int](bytes)
+    val bytes = Serdes[Chunk, Chunk].serialize[Int](chunk)
+    val out   = Serdes[Chunk, Chunk].deserialize[Int](bytes)
 
     //zioSerdesPkg.eqv(arr, out.toArray) === true
     chunk === out // Chunk comparison doesn't work!
