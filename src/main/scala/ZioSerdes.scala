@@ -15,31 +15,33 @@ sealed abstract class Serdes[F[_], G[_]] {
 
 object Serdes {
 
-  def scatter[A](value: A): BArr = {
+  def scatter[F[_], A](value: F[A]): BArr = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
     val oos                           = new ObjectOutputStream(stream)
-    oos.writeObject(value)
-    oos.close()
+    try {
+      oos.writeObject(value)
+    } finally {
+      oos.close()
+    }
     stream.toByteArray
   }
 
-  def gather[A](bytes: BArr): A = {
+  def gather[F[_], A](bytes: BArr): F[A] = {
     val ois   = new ObjectInputStream(new ByteArrayInputStream(bytes))
-    val value = ois.readObject
-    ois.close()
-    value.asInstanceOf[A]
+    try {
+      (ois.readObject()).asInstanceOf[F[A]]
+    } finally {
+      ois.close()
+    }
   }
 
   implicit val chunkSerdes = new Serdes[Chunk, Chunk] {
 
     def serialize[A](din: Chunk[A]): Chunk[Byte] =
-      Chunk.fromArray(scatter(din))
+      Chunk.fromArray(scatter[Array, A](din.toArray))
 
-    def deserialize[A](din: Chunk[Byte]): Chunk[A] = {
-      val tmp: Array[A] = gather(din.toArray)
-      Chunk.fromArray(tmp)
-
-    }
+    def deserialize[A](din: Chunk[Byte]): Chunk[A] =
+      Chunk.fromArray(gather[Array, A](din.toArray))
 
   }
 }
