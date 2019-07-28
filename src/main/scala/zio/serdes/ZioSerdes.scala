@@ -14,7 +14,7 @@ sealed abstract class Serdes[F[_], G[_]] {
 
 object Serdes {
 
-  def apply[F[_], G[_]](implicit srd: Serdes[F,G]) = srd
+  def apply[F[_], G[_]](implicit srd: Serdes[F, G]) = srd
 
   def scatter[F[_], A](value: F[A]): BArr = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
@@ -28,7 +28,7 @@ object Serdes {
   }
 
   def gather[F[_], A](bytes: BArr): F[A] = {
-    val ois   = new ObjectInputStream(new ByteArrayInputStream(bytes))
+    val ois = new ObjectInputStream(new ByteArrayInputStream(bytes))
     try {
       (ois.readObject()).asInstanceOf[F[A]]
     } finally {

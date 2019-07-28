@@ -1,5 +1,7 @@
 val ZioVersion    = "1.0.0-RC10-1"
 val Specs2Version = "4.6.0"
+val ArrowVersion  = "0.14.1"
+val JUnitVersion  = "4.13-beta-3"
 
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -10,8 +12,12 @@ version := "0.0.1"
 scalaVersion := "2.12.8"
 maxErrors := 3
 libraryDependencies ++= Seq(
-  "dev.zio"    %% "zio"         % ZioVersion,
-  "org.specs2" %% "specs2-core" % Specs2Version % "test"
+  "dev.zio"          %% "zio"            % ZioVersion,
+  "org.specs2"       %% "specs2-core"    % Specs2Version % "test",
+  "org.apache.arrow" % "arrow-java-root" % ArrowVersion,
+  //"org.apache.arrow" % "arrow-algorithm" % ArrowVersion,
+  "org.apache.arrow" % "arrow-memory" % ArrowVersion
+  //"junit"            % "junit"        % JUnitVersion
 )
 
 scalacOptions --= Seq(
