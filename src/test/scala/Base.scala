@@ -17,13 +17,13 @@ class BaseSpec extends Specification with DefaultRuntime {
   def sgBArr = {
 
     val arr      = Array(1, 2, 3)
-    val bytesArr = Serdes.scatter[Array, Int](arr)
+    val bytesArr = Serdes.scatter[Array, Int](arr).toByteArray
     val outArr   = Serdes.gather[Array, Int](bytesArr)
 
     arr == outArr
 
     val s     = Array("String")
-    val bytes = Serdes.scatter[Array, String](s)
+    val bytes = Serdes.scatter[Array, String](s).toByteArray
     val out   = Serdes.gather[Array, String](bytes)
 
     s === out
@@ -40,4 +40,7 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     chunk === out
   }
+
+  def sdArrow =
+    true === true
 }

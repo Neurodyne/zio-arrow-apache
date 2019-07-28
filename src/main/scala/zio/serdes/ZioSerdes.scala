@@ -16,7 +16,10 @@ object Serdes {
 
   def apply[F[_], G[_]](implicit srd: Serdes[F, G]) = srd
 
-  def scatter[F[_], A](value: F[A]): BArr = {
+  type IStream = ByteArrayInputStream
+  type OStream = ByteArrayOutputStream
+
+  def scatter[F[_], A](value: F[A]): OStream = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
     val oos                           = new ObjectOutputStream(stream)
     try {
@@ -24,7 +27,7 @@ object Serdes {
     } finally {
       oos.close()
     }
-    stream.toByteArray
+    stream
   }
 
   def gather[F[_], A](bytes: BArr): F[A] = {
@@ -39,10 +42,20 @@ object Serdes {
   implicit val chunkSerdes = new Serdes[Chunk, Chunk] {
 
     def serialize[A](din: Chunk[A]): Chunk[Byte] =
-      Chunk.fromArray(scatter[Array, A](din.toArray))
+      Chunk.fromArray(scatter[Array, A](din.toArray).toByteArray)
 
     def deserialize[A](din: Chunk[Byte]): Chunk[A] =
       Chunk.fromArray(gather[Array, A](din.toArray))
 
   }
+
+  // implicit val arrowSerdes = new Serdes[Chunk, Chunk] {
+
+  //   def serialize[A](din: Chunk[A]): Chunk[Byte] =
+  //     Chunk.fromArray(scatter[Array, A](din.toArray).toByteArray)
+
+  //   def deserialize[A](din: Chunk[Byte]): Chunk[A] =
+  //     Chunk.fromArray(gather[Array, A](din.toArray))
+
+  // }
 }
