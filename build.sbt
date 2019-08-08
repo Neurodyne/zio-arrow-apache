@@ -8,7 +8,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 organization := "Neurodyne"
 name := "zio-serdes"
 version := "0.0.1"
-scalaVersion := "2.12.9"
+scalaVersion := "2.12.8"
 maxErrors := 3
 libraryDependencies ++= Seq(
   "dev.zio"          %% "zio"            % ZioVersion,
