@@ -6,16 +6,16 @@ import org.apache.arrow.vector.ipc.{ ArrowStreamReader }
 import zio.{ Chunk }
 // import zio.serdes._
 
-sealed abstract class Serdes[F[_], G[_]] {
+sealed abstract class Serdes[F[_], G[_], A, B] {
 
   // def serialize[A, B](din: F[A]): G[B]
-  def deserialize[A, B](din: G[A]): F[B]
+  def deserialize(din: G[A]): F[B]
 
 }
 
 object Serdes {
 
-  def apply[F[_], G[_]](implicit srd: Serdes[F, G]) = srd
+  def apply[F[_], G[_], A, B](implicit srd: Serdes[F, G, A, B]) = srd
 
   def scatter[F[_], A](value: F[A]): ByteArrayOutputStream = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
@@ -49,7 +49,7 @@ object Serdes {
   // }
 
   // Serdes for Apache Arrow
-  implicit val arrowSerdes = new Serdes[Chunk, Chunk] {
+  implicit val arrowSerdes = new Serdes[Chunk, Chunk, BArr, ArrowStreamReader] {
 
     // type BArr = Array[Byte]
 
@@ -62,7 +62,7 @@ object Serdes {
 
     // type delta = ArrowStreamReader
 
-    def deserialize[Array[Byte], ArrowStreamReader](din: Chunk[BArr]): Chunk[ArrowStreamReader] =
+    def deserialize(din: Chunk[BArr]): Chunk[ArrowStreamReader] =
       for {
         arr    <- din
         alloc  = new RootAllocator(Integer.MAX_VALUE)

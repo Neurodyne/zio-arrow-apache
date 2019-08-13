@@ -4,6 +4,7 @@ import org.specs2._
 import zio.{ Chunk, DefaultRuntime }
 
 import zio.serdes._
+import org.apache.arrow.vector.ipc.ArrowStreamReader
 
 class BaseSpec extends Specification with DefaultRuntime {
 
@@ -35,9 +36,11 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val arr: Array[Int] = Array(1, 2, 3)
     val chunk           = Chunk.fromArray(arr)
+    val byts: Array[Byte] = Array(1, 2, 3)
+    val barr           = Chunk(byts)
 
-    val bytes = Serdes[Chunk, Chunk].serialize[Int](chunk)
-    val out   = Serdes[Chunk, Chunk].deserialize[Int](bytes)
+    ///val bytes = Serdes[Chunk, Chunk, BArr, ArrowStreamReader].serialize(chunk)
+    val out   = Serdes[Chunk, Chunk, BArr, ArrowStreamReader].deserialize(barr)
 
     chunk === out
   }
