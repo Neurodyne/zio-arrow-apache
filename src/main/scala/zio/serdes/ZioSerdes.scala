@@ -3,16 +3,16 @@ package zio.serdes
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
 import zio.{ Chunk }
 
-sealed abstract class Serdes[F[_], G[_]] {
+sealed abstract class Serdes[F[_]] {
 
-  def serialize[A](din: F[A]): G[Byte]
-  def deserialize[A](din: G[Byte]): F[A]
+  def serialize[A](din: F[A]): BArr
+  def deserialize[A](din: BArr): F[A]
 
 }
 
 object Serdes {
 
-  def apply[F[_], G[_]](implicit srd: Serdes[F, G]) = srd
+  def apply[F[_]](implicit srd: Serdes[F]) = srd
 
   def scatter[F[_], A](value: F[A]): ByteArrayOutputStream = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
@@ -35,18 +35,18 @@ object Serdes {
   }
 
   // Serdes for ZIO Chunk
-  implicit val chunkSerdes = new Serdes[Chunk, Chunk] {
+  implicit val chunkSerdes = new Serdes[Chunk] {
 
-    def serialize[A](din: Chunk[A]): Chunk[Byte] =
-      Chunk.fromArray(scatter[Array, A](din.toArray).toByteArray)
+    def serialize[A](din: Chunk[A]): BArr =
+      scatter[Array, A](din.toArray).toByteArray
 
-    def deserialize[A](din: Chunk[Byte]): Chunk[A] =
+    def deserialize[A](din: BArr): Chunk[A] =
       Chunk.fromArray(gather[Array, A](din.toArray))
 
   }
 
   // Serdes for Apache Arrow
-  implicit val arrowSerdes = new Serdes[ByteArrow, Array] {
+  implicit val arrowSerdes = new Serdes[ByteArrow] {
 
     def serialize[A](din: ByteArrow[A]): BArr = {
       val bytes = Array(din.readableBytes.toByte)
