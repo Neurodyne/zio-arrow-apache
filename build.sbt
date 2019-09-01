@@ -20,7 +20,8 @@ scalacOptions --= Seq(
   "-Xfatal-warnings"
 )
 
-addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
+addCompilerPlugin("org.typelevel"   %% "kind-projector" % "0.10.3")
+addCompilerPlugin("org.scalamacros" % "paradise"        % "2.1.1" cross CrossVersion.full)
 
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
 addCommandAlias("chk", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")

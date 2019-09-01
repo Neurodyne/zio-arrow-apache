@@ -1,7 +1,12 @@
 package zio.serdes
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
-import zio.{ Chunk }
+import zio.{ Chunk, Task, ZIO }
+
+import org.apache.arrow.memory.RootAllocator
+import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
+
+import zio.serdes.serdes._
 
 sealed abstract class Serdes[F[_]] {
 
@@ -35,7 +40,7 @@ object Serdes {
   }
 
   // Serdes for ZIO Chunk
-  implicit val chunkSerdes = new Serdes[Chunk] {
+  implicit val chunkArraySerdes = new Serdes[Chunk] {
 
     def serialize[A](din: Chunk[A]): BArr =
       scatter[Array, A](din.toArray).toByteArray
@@ -45,24 +50,14 @@ object Serdes {
 
   }
 
-  // Serdes for Apache Arrow
-  implicit val arrowSerdes = new Serdes[ByteArrow] {
+  implicit val chunkArrowSerdes = new Serdes[Chunk] {
 
-    def serialize[A](din: ByteArrow[A]): BArr = {
-      val bytes = Array(din.readableBytes.toByte)
-      din.readBytes(bytes)
-      bytes
-    }
+    def serialize[A](din: Chunk[A]): BArr =
+      scatter[Array, A](din.toArray).toByteArray
 
-    def deserialize[A](din: BArr): ByteArrow[Byte] = {
-      import org.apache.arrow.memory.RootAllocator
-
-      val allocator = new RootAllocator(Long.MaxValue)
-
-      val buffer = allocator.buffer(din.length)
-      buffer.writeBytes(din)
-      buffer
-    }
+    def deserialize[A](din: BArr): Chunk[A] =
+      Chunk.fromArray(gather[Array, A](din.toArray))
 
   }
+
 }

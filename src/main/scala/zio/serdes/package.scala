@@ -1,10 +1,10 @@
-package zio
+package zio.serdes
 
+// import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
 package object serdes {
-  import io.netty.buffer.ArrowBuf
 
-  type BArr         = Array[Byte]
-  type ByteArrow[A] = ArrowBuf
+  type BArr = Array[Byte]
+  // type StreamReader[A] = ArrowStreamReader
 
   def eqv(x: BArr, y: BArr): Boolean = java.util.Arrays.equals(x, y)
 
