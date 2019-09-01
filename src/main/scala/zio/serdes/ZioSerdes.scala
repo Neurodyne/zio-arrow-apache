@@ -1,7 +1,7 @@
 package zio.serdes
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
-import zio.{ Chunk, Task, ZIO }
+import zio.{ Chunk }
 
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
@@ -50,13 +50,21 @@ object Serdes {
 
   }
 
-  implicit val chunkArrowSerdes = new Serdes[Chunk] {
+  // Serdes for Apache Arrow
+  implicit val chunkArrowSerdes = new Serdes[StreamReader] {
 
-    def serialize[A](din: Chunk[A]): BArr =
-      scatter[Array, A](din.toArray).toByteArray
+    def serialize[A](din: StreamReader[A]): BArr = {
+      val tmp: BArr = Array(1, 2, 3)
+      tmp
+    }
 
-    def deserialize[A](din: BArr): Chunk[A] =
-      Chunk.fromArray(gather[Array, A](din.toArray))
+    def deserialize[A](din: BArr): StreamReader[A] = {
+      val alloc  = new RootAllocator(Integer.MAX_VALUE)
+      val stream = new ByteArrayInputStream(din)
+      val reader = new ArrowStreamReader(stream, alloc)
+
+      reader
+    }
 
   }
 
