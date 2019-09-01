@@ -8,16 +8,16 @@ import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
 
 import zio.serdes.serdes._
 
-sealed abstract class Serdes[F[_]] {
+sealed abstract class Serdes[F[_], G[_]] {
 
   def serialize[A](din: F[A]): BArr
-  def deserialize[A](din: BArr): F[A]
+  def deserialize[A](din: BArr): G[A]
 
 }
 
 object Serdes {
 
-  def apply[F[_]](implicit srd: Serdes[F]) = srd
+  def apply[F[_], G[_]](implicit srd: Serdes[F, G]) = srd
 
   def scatter[F[_], A](value: F[A]): ByteArrayOutputStream = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
@@ -40,7 +40,7 @@ object Serdes {
   }
 
   // Serdes for ZIO Chunk
-  implicit val chunkArraySerdes = new Serdes[Chunk] {
+  implicit val chunkArraySerdes = new Serdes[Chunk, Chunk] {
 
     def serialize[A](din: Chunk[A]): BArr =
       scatter[Array, A](din.toArray).toByteArray
@@ -51,14 +51,14 @@ object Serdes {
   }
 
   // Serdes for Apache Arrow
-  implicit val chunkArrowSerdes = new Serdes[StreamReader] {
+  implicit val chunkArrowSerdes = new Serdes[ArrStreamWriter, ArrStreamReader] {
 
-    def serialize[A](din: StreamReader[A]): BArr = {
+    def serialize[A](din: ArrStreamWriter[A]): BArr = {
       val tmp: BArr = Array(1, 2, 3)
       tmp
     }
 
-    def deserialize[A](din: BArr): StreamReader[A] = {
+    def deserialize[A](din: BArr): ArrStreamReader[A] = {
       val alloc  = new RootAllocator(Integer.MAX_VALUE)
       val stream = new ByteArrayInputStream(din)
       val reader = new ArrowStreamReader(stream, alloc)

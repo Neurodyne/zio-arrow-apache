@@ -37,8 +37,8 @@ class BaseSpec extends Specification with DefaultRuntime {
     val arr: Array[Int] = Array(1, 2, 3)
     val chunk           = Chunk.fromArray(arr)
 
-    val bytes = Serdes[Chunk].serialize[Int](chunk)
-    val out   = Serdes[Chunk].deserialize[Int](bytes)
+    val bytes = Serdes[Chunk, Chunk].serialize[Int](chunk)
+    val out   = Serdes[Chunk, Chunk].deserialize[Int](bytes)
 
     chunk === out
   }
@@ -59,8 +59,8 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val arr: BArr = Array(1, 2, 3)
 
-    val bytes = Serdes[Chunk].deserialize(arr)
-    val res0  = Serdes[Chunk].serialize(bytes)
+    val bytes = Serdes[Chunk, Chunk].deserialize(arr)
+    val res0  = Serdes[Chunk, Chunk].serialize(bytes)
 
     res0 === arr
     // true === true

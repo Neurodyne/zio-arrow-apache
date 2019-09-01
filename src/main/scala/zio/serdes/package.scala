@@ -5,8 +5,8 @@ package object serdes {
 
   type BArr = Array[Byte]
 
-  type StreamWriter[A] = ArrowStreamWriter
-  type StreamReader[A] = ArrowStreamReader
+  type ArrStreamWriter[A] = ArrowStreamWriter
+  type ArrStreamReader[A] = ArrowStreamReader
 
   def eqv(x: BArr, y: BArr): Boolean = java.util.Arrays.equals(x, y)
 
