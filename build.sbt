@@ -28,3 +28,5 @@ addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.1" cross Cros
 addCommandAlias("com", "all compile test:compile it:compile")
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
 addCommandAlias("chk", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
+addCommandAlias("lint", "; compile:scalafix --check ; test:scalafix --check")
+addCommandAlias("fix", "all compile:scalafix test:scalafix")

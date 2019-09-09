@@ -59,8 +59,7 @@ class BaseSpec extends Specification with DefaultRuntime {
     val dout  = Serdes[ChunkSchema, ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
-    println(outChunk)
-    println(outSchema)
+    
 
     outChunk === din && outSchema == testSchema
 

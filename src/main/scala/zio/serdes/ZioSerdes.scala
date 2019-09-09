@@ -71,7 +71,7 @@ object Serdes {
       root.getFieldVectors.get(0).allocateNew
       val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
 
-      vec.set(1, 1)
+      vec.set(0, 5)
       vec.setValueCount(1)
       root.setRowCount(1)
 
@@ -100,7 +100,22 @@ object Serdes {
       val stream = new ByteArrayInputStream(din)
       val reader = new ArrowStreamReader(stream, alloc)
 
-      val schema = reader.getVectorSchemaRoot.getSchema
+      val root   = reader.getVectorSchemaRoot
+      val schema = root.getSchema
+
+      val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
+      reader.loadNextBatch
+
+      println(vec.getMinorType)
+
+      val count = vec.getValueCount
+      println(vec.getValueCount)
+
+      (0 to count).foreach(
+        i =>
+          if (!vec.isNull(i))
+            println(vec.get(i))
+      )
 
       val out = Chunk(1, 2, 3).asInstanceOf[Chunk[A]]
       (out, schema)
