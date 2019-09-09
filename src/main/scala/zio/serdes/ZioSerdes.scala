@@ -8,6 +8,7 @@ import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
 
 import zio.serdes.serdes._
 import org.apache.arrow.vector.VectorSchemaRoot
+import org.apache.arrow.vector.TinyIntVector
 
 sealed abstract class Serdes[F[_], G[_]] {
 
@@ -52,7 +53,7 @@ object Serdes {
   }
 
   // Serdes for Apache Arrow
-  implicit val chunkArrowSerdes = new Serdes[ChunkSchema, ArrStreamReader] {
+  implicit val chunkArrowSerdes = new Serdes[ChunkSchema, ChunkSchema] {
 
     val alloc = new RootAllocator(Integer.MAX_VALUE)
 
@@ -64,21 +65,45 @@ object Serdes {
       //Create a root alloc for this schema
       val root = VectorSchemaRoot.create(schema, alloc)
 
+      // Write batchs
+      val numBatches = 1
+
+      root.getFieldVectors.get(0).allocateNew
+      val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
+
+      vec.set(1, 1)
+      vec.setValueCount(1)
+      root.setRowCount(1)
+
       // Write to output
       val out    = new ByteArrayOutputStream()
       val writer = new ArrowStreamWriter(root, null, out)
+
+      writer.start
+
+      for (i <- 0 until numBatches)
+        writer.writeBatch
+
+      writer.end
+
+      val bytesWritten = writer.bytesWritten
+      println(s"Bytes written: $bytesWritten")
+
       writer.close
 
       out.toByteArray
 
     }
 
-    def deserialize[A](din: BArr): ArrStreamReader[A] = {
+    def deserialize[A](din: BArr): ChunkSchema[A] = {
 
       val stream = new ByteArrayInputStream(din)
       val reader = new ArrowStreamReader(stream, alloc)
 
-      reader
+      val schema = reader.getVectorSchemaRoot.getSchema
+
+      val out = Chunk(1, 2, 3).asInstanceOf[Chunk[A]]
+      (out, schema)
     }
 
   }
