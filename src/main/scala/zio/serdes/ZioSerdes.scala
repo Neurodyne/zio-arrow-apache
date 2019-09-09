@@ -8,9 +8,6 @@ import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
 
 import zio.serdes.serdes._
 import org.apache.arrow.vector.VectorSchemaRoot
-import org.apache.arrow.vector.types.pojo.{ ArrowType, Field, FieldType, Schema }
-import java.util.Arrays.asList
-import java.util.Collections
 
 sealed abstract class Serdes[F[_], G[_]] {
 
@@ -55,17 +52,19 @@ object Serdes {
   }
 
   // Serdes for Apache Arrow
-  implicit val chunkArrowSerdes = new Serdes[Chunk, ArrStreamReader] {
-
-    val testSchema = new Schema(
-      asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
-    )
+  implicit val chunkArrowSerdes = new Serdes[ChunkSchema, ArrStreamReader] {
 
     val alloc = new RootAllocator(Integer.MAX_VALUE)
-    val root  = VectorSchemaRoot.create(testSchema, alloc)
 
-    def serialize[A](din: Chunk[A]): BArr = {
+    def serialize[A](din: ChunkSchema[A]): BArr = {
 
+      // Unpack data and schema
+      val (data, schema) = din
+
+      //Create a root alloc for this schema
+      val root = VectorSchemaRoot.create(schema, alloc)
+
+      // Write to output
       val out    = new ByteArrayOutputStream()
       val writer = new ArrowStreamWriter(root, null, out)
       writer.close

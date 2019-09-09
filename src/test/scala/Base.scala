@@ -6,6 +6,10 @@ import zio.{ Chunk, DefaultRuntime }
 import zio.serdes._
 import zio.serdes.serdes._
 
+import org.apache.arrow.vector.types.pojo.{ ArrowType, Field, FieldType, Schema }
+import java.util.Arrays.asList
+import java.util.Collections
+
 class BaseSpec extends Specification with DefaultRuntime {
 
   def is = s2"""
@@ -13,7 +17,7 @@ class BaseSpec extends Specification with DefaultRuntime {
   ZIO Serdes should
     scatter and gather byte array               $sgBArr
     serialize and deserialize byte array        $sdBArr
-    serialize and deserialize Apache Arrow      $sdArrow
+    serialize and deserialize an Arrow          $sdArrow
     """
 
   def sgBArr = {
@@ -45,12 +49,17 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   def sdArrow = {
 
+    val testSchema = new Schema(
+      asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
+    )
+
     val din = Chunk(1, 2, 3)
 
-    val bytes = Serdes[Chunk, ArrStreamReader].serialize(din)
-    val dout  = Serdes[Chunk, ArrStreamReader].deserialize(bytes)
+    val bytes = Serdes[ChunkSchema, ArrStreamReader].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema, ArrStreamReader].deserialize(bytes)
 
     dout === din
-    // true === true
+
   }
+
 }
