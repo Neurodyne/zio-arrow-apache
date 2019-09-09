@@ -44,25 +44,13 @@ class BaseSpec extends Specification with DefaultRuntime {
   }
 
   def sdArrow = {
-    import org.apache.arrow.vector.types.pojo.{ ArrowType, Field, FieldType, Schema }
-    import org.apache.arrow.vector.{ VectorSchemaRoot }
-    import org.apache.arrow.memory.RootAllocator
-    import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
-    import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
 
-    import java.util.Arrays.asList
-    import java.util.Collections
+    val din = Chunk(1, 2, 3)
 
-    val allocator = new RootAllocator(128)
+    val bytes = Serdes[Chunk, ArrStreamReader].serialize(din)
+    val dout  = Serdes[Chunk, ArrStreamReader].deserialize(bytes)
 
-    // Serdes A Simple Array
-
-    val arr: BArr = Array(1, 2, 3)
-
-    val bytes = Serdes[Chunk, Chunk].deserialize(arr)
-    val res0  = Serdes[Chunk, Chunk].serialize(bytes)
-
-    res0 === arr
+    dout === din
     // true === true
   }
 }
