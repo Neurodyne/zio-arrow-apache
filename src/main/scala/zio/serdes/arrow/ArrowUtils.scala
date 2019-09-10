@@ -8,7 +8,7 @@ import org.apache.arrow.vector.ipc.ArrowStreamWriter
 import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.TinyIntVector
 
-import zio.{ Chunk }
+import zio.{ Chunk, ZIO }
 
 import zio.serdes.serdes._
 import org.apache.arrow.vector.Float4Vector
@@ -49,7 +49,7 @@ object ArrowUtils {
             vec.asInstanceOf[Float4Vector].set(i, data(i).asInstanceOf[Float])
         }
 
-        case _ =>
+        case _ => ZIO.fail("Not implemented")
       }
 
     })
@@ -81,7 +81,7 @@ object ArrowUtils {
             if (!vec.isNull(i))
               out += vec.asInstanceOf[Float4Vector].get(i)
 
-        case _ =>
+        case _ => ZIO.fail("Not implemented")
       }
 
     })

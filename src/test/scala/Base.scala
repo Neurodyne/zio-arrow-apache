@@ -20,6 +20,7 @@ class BaseSpec extends Specification with DefaultRuntime {
     work for Chunk                      $sdChunk
     work for Arrow Chunk[Int]           $sdArrChunkInt
     work for Arrow Chunk[Float]         $sdArrChunkFloat
+    work for Arrow Chunk[Double]        $sdArrChunkDouble
     """
 
   def sgBArr = {
@@ -76,7 +77,28 @@ class BaseSpec extends Specification with DefaultRuntime {
       )
     )
 
-    val din = Chunk(1.0f, 2.0f, -1.0f)
+    val din = Chunk(1.0f, -1.0f)
+
+    val bytes = ArrowSerdes.serialize((din, testSchema))
+    val dout  = ArrowSerdes.deserialize(bytes)
+
+    val (outChunk, outSchema) = dout
+
+    outChunk === din && outSchema == testSchema
+
+  }
+
+  def sdArrChunkDouble = {
+
+    val precision = FloatingPointPrecision.DOUBLE
+
+    val testSchema = new Schema(
+      asList(
+        new Field("testField", FieldType.nullable(new ArrowType.FloatingPoint(precision)), Collections.emptyList())
+      )
+    )
+
+    val din = Chunk(1.0, -1.0)
 
     val bytes = ArrowSerdes.serialize((din, testSchema))
     val dout  = ArrowSerdes.deserialize(bytes)

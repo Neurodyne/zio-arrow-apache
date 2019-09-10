@@ -26,6 +26,7 @@ object ArrowSerdes extends Serdes[ChunkSchema] {
       root.getFieldVectors.get(i).allocateNew
 
     // Write to vectors
+    // unsafeRun(ZIO.effectTotal(writeVectors(root, data)))
     writeVectors(root, data)
 
     // Write to output stream
