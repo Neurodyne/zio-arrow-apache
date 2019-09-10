@@ -15,9 +15,10 @@ class BaseSpec extends Specification with DefaultRuntime {
   def is = s2"""
 
   ZIO Serdes should
-    scatter and gather byte array               $sgBArr
-    serialize and deserialize byte array        $sdBArr
-    serialize and deserialize an Arrow          $sdArrow
+    work for byte array                 $sgBArr
+    work for Chunk                      $sdChunk
+    work for Arrow Chunk[Int]           $sdArrChunkInt
+    work for Arrow Chunk[Float]         $sdArrChunkFloat
     """
 
   def sgBArr = {
@@ -36,7 +37,7 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   }
 
-  def sdBArr = {
+  def sdChunk = {
 
     val arr: Array[Int] = Array(1, 2, 3)
     val chunk           = Chunk.fromArray(arr)
@@ -47,13 +48,30 @@ class BaseSpec extends Specification with DefaultRuntime {
     chunk === out
   }
 
-  def sdArrow = {
+  def sdArrChunkInt = {
 
     val testSchema = new Schema(
       asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
     )
 
     val din = Chunk(1, 2, 3, 5)
+
+    val bytes = ArrowSerdes.serialize((din, testSchema))
+    val dout  = ArrowSerdes.deserialize(bytes)
+
+    val (outChunk, outSchema) = dout
+
+    outChunk === din && outSchema == testSchema
+
+  }
+
+  def sdArrChunkFloat = {
+
+    val testSchema = new Schema(
+      asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
+    )
+
+    val din = Chunk(1.0, 2.0)
 
     val bytes = ArrowSerdes.serialize((din, testSchema))
     val dout  = ArrowSerdes.deserialize(bytes)

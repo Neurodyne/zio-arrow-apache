@@ -17,18 +17,16 @@ object ArrowSerdes extends Serdes[ChunkSchema] {
 
     // Write setup
     val numBatches = 1
-    val length     = data.length // write vector length
+    data.length // write vector length
 
     //Create a root alloc for this schema
     val root = VectorSchemaRoot.create(schema, alloc)
-    root.getFieldVectors.get(0).allocateNew
 
-    // Update metadata
-    root.setRowCount(length)
+    for (i <- 0 until numBatches)
+      root.getFieldVectors.get(i).allocateNew
 
     // Write to vectors
-    val vectors = root.getFieldVectors
-    writeVector(vectors, length, data)
+    writeVectors(root, data)
 
     // Write to output stream
     writeStream(root, numBatches)
@@ -45,7 +43,7 @@ object ArrowSerdes extends Serdes[ChunkSchema] {
 
     // Read vectors
     reader.loadNextBatch
-    val out = readVector(root)
+    val out = readVectors(root)
 
     (out, schema)
 

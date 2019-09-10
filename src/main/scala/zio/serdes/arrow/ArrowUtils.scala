@@ -1,13 +1,11 @@
 package zio.serdes.arrow
 
-import java.util.{ List => JList }
 import java.io.ByteArrayOutputStream
 
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.ArrowStreamWriter
 import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.TinyIntVector
-import org.apache.arrow.vector.FieldVector
 
 import zio.{ Chunk }
 
@@ -17,18 +15,36 @@ object ArrowUtils {
   val alloc = new RootAllocator(Integer.MAX_VALUE)
 
   // Write to Arrow Vector
-  def writeVector[A](vectors: JList[FieldVector], len: Int, data: Chunk[A]): Unit = {
+  def writeVectors[A](root: VectorSchemaRoot, data: Chunk[A]): Unit = {
+    val vectors = root.getFieldVectors
+    val len     = data.length
 
-    val vec = vectors.get(0).asInstanceOf[TinyIntVector]
-    vec.setValueCount(len)
+    // Update metadata
+    root.setRowCount(len)
 
-    for (i <- 0 until len)
-      vec.set(i, data(i).asInstanceOf[Int])
+    val size = vectors.size
+    println(s"vectors size = $size")
+
+    for (i <- 0 until size) {
+
+      val vec = vectors.get(i).asInstanceOf[TinyIntVector]
+      vec.setValueCount(len)
+
+      vec.getMinorType match {
+        case _ => {
+          for (i <- 0 until len)
+            vec.set(i, data(i).asInstanceOf[Int])
+
+        }
+
+      }
+
+    }
 
   }
 
   // Read from Arrow Vector
-  def readVector[A](root: VectorSchemaRoot): Chunk[A] = {
+  def readVectors[A](root: VectorSchemaRoot): Chunk[A] = {
 
     val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
 
