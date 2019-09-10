@@ -9,6 +9,7 @@ import zio.serdes.arrow.ArrowSerdes
 import org.apache.arrow.vector.types.pojo.{ ArrowType, Field, FieldType, Schema }
 import java.util.Arrays.asList
 import java.util.Collections
+import org.apache.arrow.vector.types.FloatingPointPrecision
 
 class BaseSpec extends Specification with DefaultRuntime {
 
@@ -67,11 +68,15 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   def sdArrChunkFloat = {
 
+    val precision = FloatingPointPrecision.SINGLE
+
     val testSchema = new Schema(
-      asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
+      asList(
+        new Field("testField", FieldType.nullable(new ArrowType.FloatingPoint(precision)), Collections.emptyList())
+      )
     )
 
-    val din = Chunk(1.0, 2.0)
+    val din = Chunk(1.0f, 2.0f, -1.0f)
 
     val bytes = ArrowSerdes.serialize((din, testSchema))
     val dout  = ArrowSerdes.deserialize(bytes)

@@ -2,6 +2,7 @@ package zio.serdes.arrow
 
 import java.io.ByteArrayOutputStream
 
+import org.apache.arrow.vector.types.Types.MinorType.{ FLOAT4, TINYINT }
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.ArrowStreamWriter
 import org.apache.arrow.vector.VectorSchemaRoot
@@ -10,11 +11,12 @@ import org.apache.arrow.vector.TinyIntVector
 import zio.{ Chunk }
 
 import zio.serdes.serdes._
+import org.apache.arrow.vector.Float4Vector
 
 object ArrowUtils {
   val alloc = new RootAllocator(Integer.MAX_VALUE)
 
-  // Write to Arrow Vector
+  // Write to Arrow Vectors
   def writeVectors[A](root: VectorSchemaRoot, data: Chunk[A]): Unit = {
     val vectors = root.getFieldVectors
     val len     = data.length
@@ -25,38 +27,64 @@ object ArrowUtils {
     val size = vectors.size
     println(s"vectors size = $size")
 
-    for (i <- 0 until size) {
+    vectors.forEach(vec => {
 
-      val vec = vectors.get(i).asInstanceOf[TinyIntVector]
       vec.setValueCount(len)
+      val vtype = vec.getMinorType
+      println(s"Minor type = $vtype")
 
-      vec.getMinorType match {
-        case _ => {
+      vtype match {
+
+        case TINYINT => {
+          println("Inside TINYINT vector")
+
           for (i <- 0 until len)
-            vec.set(i, data(i).asInstanceOf[Int])
-
+            vec.asInstanceOf[TinyIntVector].set(i, data(i).asInstanceOf[Int])
         }
 
+        case FLOAT4 => {
+          println("Inside FLOAT4 vector")
+
+          for (i <- 0 until len)
+            vec.asInstanceOf[Float4Vector].set(i, data(i).asInstanceOf[Float])
+        }
+
+        case _ =>
       }
 
-    }
-
+    })
   }
 
-  // Read from Arrow Vector
+  // Read from Arrow Vectors
   def readVectors[A](root: VectorSchemaRoot): Chunk[A] = {
+    println("Inside reader")
 
-    val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
+    val out = scala.collection.mutable.ArrayBuffer[Float]()
 
-    println(vec.getMinorType)
+    val vectors = root.getFieldVectors
 
-    val count = vec.getValueCount
+    vectors.forEach(vec => {
 
-    val out = scala.collection.mutable.ArrayBuffer[Byte]()
+      val vtype = vec.getMinorType
+      val count = vec.getValueCount
+      println(s"Minor type = $vtype")
 
-    for (i <- 0 until count)
-      if (!vec.isNull(i))
-        out += vec.get(i)
+      vtype match {
+
+        case TINYINT =>
+          for (i <- 0 until count)
+            if (!vec.isNull(i))
+              out += vec.asInstanceOf[TinyIntVector].get(i)
+
+        case FLOAT4 =>
+          for (i <- 0 until count)
+            if (!vec.isNull(i))
+              out += vec.asInstanceOf[Float4Vector].get(i)
+
+        case _ =>
+      }
+
+    })
 
     println(out)
     Chunk.fromArray(out.toArray).asInstanceOf[Chunk[A]]
