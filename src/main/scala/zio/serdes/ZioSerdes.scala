@@ -1,25 +1,27 @@
 package zio.serdes
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
-import zio.{ Chunk }
+import java.util.{ List => JList }
 
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.{ ArrowStreamReader, ArrowStreamWriter }
-
-import zio.serdes.serdes._
 import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.TinyIntVector
+import org.apache.arrow.vector.FieldVector
 
-sealed abstract class Serdes[F[_], G[_]] {
+import zio.{ Chunk }
+import zio.serdes.serdes._
+
+sealed abstract class Serdes[F[_]] {
 
   def serialize[A](din: F[A]): BArr
-  def deserialize[A](din: BArr): G[A]
+  def deserialize[A](din: BArr): F[A]
 
 }
 
 object Serdes {
 
-  def apply[F[_], G[_]](implicit srd: Serdes[F, G]) = srd
+  def apply[F[_]](implicit srd: Serdes[F]) = srd
 
   def scatter[F[_], A](value: F[A]): ByteArrayOutputStream = {
     val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
@@ -42,7 +44,7 @@ object Serdes {
   }
 
   // Serdes for ZIO Chunk
-  implicit val chunkArraySerdes = new Serdes[Chunk, Chunk] {
+  implicit val chunkArraySerdes = new Serdes[Chunk] {
 
     def serialize[A](din: Chunk[A]): BArr =
       scatter[Array, A](din.toArray).toByteArray
@@ -53,35 +55,48 @@ object Serdes {
   }
 
   // Serdes for Apache Arrow
-  implicit val chunkArrowSerdes = new Serdes[ChunkSchema, ChunkSchema] {
+  implicit val chunkArrowSerdes = new Serdes[ChunkSchema] {
 
     val alloc = new RootAllocator(Integer.MAX_VALUE)
 
-    def serialize[A](din: ChunkSchema[A]): BArr = {
+    // Write to Arrow Vector
+    def writeVector[A](vectors: JList[FieldVector], len: Int, data: Chunk[A]): Unit = {
 
-      // Unpack data and schema
-      val (data, schema) = din
+      val vec = vectors.get(0).asInstanceOf[TinyIntVector]
+      vec.setValueCount(len)
 
-      //Create a root alloc for this schema
-      val root = VectorSchemaRoot.create(schema, alloc)
+      for (i <- 0 until len)
+        vec.set(i, data(i).asInstanceOf[Int])
 
-      // Write batchs
-      val numBatches = 1
+    }
 
-      root.getFieldVectors.get(0).allocateNew
+    // Read from Arrow Vector
+    def readVector[A](root: VectorSchemaRoot): Chunk[A] = {
+
       val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
 
-      vec.set(0, 5)
-      vec.setValueCount(1)
-      root.setRowCount(1)
+      println(vec.getMinorType)
 
-      // Write to output
-      val out    = new ByteArrayOutputStream()
+      val count = vec.getValueCount
+
+      val out = scala.collection.mutable.ArrayBuffer[Byte]()
+
+      for (i <- 0 until count)
+        if (!vec.isNull(i))
+          out += vec.get(i)
+
+      println(out)
+      Chunk.fromArray(out.toArray).asInstanceOf[Chunk[A]]
+    }
+
+    def writeStream(root: VectorSchemaRoot, numBatches: Int): BArr = {
+
+      val out    = new ByteArrayOutputStream
       val writer = new ArrowStreamWriter(root, null, out)
 
       writer.start
 
-      for (i <- 0 until numBatches)
+      for (_ <- 0 until numBatches)
         writer.writeBatch
 
       writer.end
@@ -95,6 +110,31 @@ object Serdes {
 
     }
 
+    def serialize[A](din: ChunkSchema[A]): BArr = {
+
+      // Unpack data and schema
+      val (data, schema) = din
+
+      // Write setup
+      val numBatches = 1
+      val length     = data.length // write vector length
+
+      //Create a root alloc for this schema
+      val root = VectorSchemaRoot.create(schema, alloc)
+      root.getFieldVectors.get(0).allocateNew
+
+      // Update metadata
+      root.setRowCount(length)
+
+      // Write to vectors
+      val vectors = root.getFieldVectors
+      writeVector(vectors, length, data)
+
+      // Write to output stream
+      writeStream(root, numBatches)
+
+    }
+
     def deserialize[A](din: BArr): ChunkSchema[A] = {
 
       val stream = new ByteArrayInputStream(din)
@@ -103,24 +143,13 @@ object Serdes {
       val root   = reader.getVectorSchemaRoot
       val schema = root.getSchema
 
-      val vec = root.getFieldVectors.get(0).asInstanceOf[TinyIntVector]
+      // Read vectors
       reader.loadNextBatch
+      val out = readVector(root)
 
-      println(vec.getMinorType)
-
-      val count = vec.getValueCount
-      println(vec.getValueCount)
-
-      (0 to count).foreach(
-        i =>
-          if (!vec.isNull(i))
-            println(vec.get(i))
-      )
-
-      val out = Chunk(1, 2, 3).asInstanceOf[Chunk[A]]
       (out, schema)
+
     }
 
   }
-
 }

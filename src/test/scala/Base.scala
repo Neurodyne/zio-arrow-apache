@@ -41,8 +41,8 @@ class BaseSpec extends Specification with DefaultRuntime {
     val arr: Array[Int] = Array(1, 2, 3)
     val chunk           = Chunk.fromArray(arr)
 
-    val bytes = Serdes[Chunk, Chunk].serialize[Int](chunk)
-    val out   = Serdes[Chunk, Chunk].deserialize[Int](bytes)
+    val bytes = Serdes[Chunk].serialize[Int](chunk)
+    val out   = Serdes[Chunk].deserialize[Int](bytes)
 
     chunk === out
   }
@@ -53,13 +53,12 @@ class BaseSpec extends Specification with DefaultRuntime {
       asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
     )
 
-    val din = Chunk(1, 2, 3)
+    val din = Chunk(1, 2, 3, 5)
 
-    val bytes = Serdes[ChunkSchema, ChunkSchema].serialize((din, testSchema))
-    val dout  = Serdes[ChunkSchema, ChunkSchema].deserialize(bytes)
+    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
-    
 
     outChunk === din && outSchema == testSchema
 
