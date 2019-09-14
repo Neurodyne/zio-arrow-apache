@@ -2,16 +2,16 @@ package zio.serdes.arrow
 
 import java.io.ByteArrayOutputStream
 
-import org.apache.arrow.vector.types.Types.MinorType.{ FLOAT4, TINYINT }
+import org.apache.arrow.vector.types.Types.MinorType.{ FLOAT4, FLOAT8, TINYINT }
+import org.apache.arrow.vector.{ Float4Vector, Float8Vector }
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.ArrowStreamWriter
 import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.TinyIntVector
 
-import zio.{ Chunk, ZIO }
+import zio.Chunk
 
 import zio.serdes.serdes._
-import org.apache.arrow.vector.Float4Vector
 
 object ArrowUtils {
   val alloc = new RootAllocator(Integer.MAX_VALUE)
@@ -31,25 +31,31 @@ object ArrowUtils {
 
       vec.setValueCount(len)
       val vtype = vec.getMinorType
-      println(s"Minor type = $vtype")
 
       vtype match {
 
         case TINYINT => {
-          println("Inside TINYINT vector")
+          println("WR TINYINT vector")
 
           for (i <- 0 until len)
             vec.asInstanceOf[TinyIntVector].set(i, data(i).asInstanceOf[Int])
         }
 
         case FLOAT4 => {
-          println("Inside FLOAT4 vector")
+          println("WR FLOAT4 vector")
 
           for (i <- 0 until len)
             vec.asInstanceOf[Float4Vector].set(i, data(i).asInstanceOf[Float])
         }
 
-        case _ => ZIO.fail("Not implemented")
+        case FLOAT8 => {
+          println("WR FLOAT8 vector")
+
+          for (i <- 0 until len)
+            vec.asInstanceOf[Float8Vector].set(i, data(i).asInstanceOf[Double])
+        }
+
+        case _ => throw new Exception(s"Not yet implemented: $vtype")
       }
 
     })
@@ -57,34 +63,53 @@ object ArrowUtils {
 
   // Read from Arrow Vectors
   def readVectors[A](root: VectorSchemaRoot): Chunk[A] = {
-    println("Inside reader")
-
-    val out = scala.collection.mutable.ArrayBuffer[Float]()
 
     val vectors = root.getFieldVectors
 
-    vectors.forEach(vec => {
+    // val out = vectors.forEach(vec => {
+    val vec = vectors.get(0)
 
+    val out = {
       val vtype = vec.getMinorType
       val count = vec.getValueCount
-      println(s"Minor type = $vtype")
 
       vtype match {
 
-        case TINYINT =>
+        case TINYINT => {
+          println("RD TINYINT vector")
+
+          val tmp = scala.collection.mutable.ArrayBuffer[Byte]()
           for (i <- 0 until count)
             if (!vec.isNull(i))
-              out += vec.asInstanceOf[TinyIntVector].get(i)
+              tmp += vec.asInstanceOf[TinyIntVector].get(i)
+          tmp
+        }
 
-        case FLOAT4 =>
+        case FLOAT4 => {
+          println("RD FLOAT4 vector")
+
+          val tmp = scala.collection.mutable.ArrayBuffer[Float]()
           for (i <- 0 until count)
             if (!vec.isNull(i))
-              out += vec.asInstanceOf[Float4Vector].get(i)
+              tmp += vec.asInstanceOf[Float4Vector].get(i)
+          tmp
+        }
 
-        case _ => ZIO.fail("Not implemented")
+        case FLOAT8 => {
+          println("RD FLOAT8 vector")
+
+          val tmp = scala.collection.mutable.ArrayBuffer[Double]()
+          for (i <- 0 until count)
+            if (!vec.isNull(i))
+              tmp += vec.asInstanceOf[Float8Vector].get(i)
+
+          tmp
+        }
+
+        case _ => throw new Exception(s"Not yet implemented: $vtype")
       }
 
-    })
+    }
 
     println(out)
     Chunk.fromArray(out.toArray).asInstanceOf[Chunk[A]]

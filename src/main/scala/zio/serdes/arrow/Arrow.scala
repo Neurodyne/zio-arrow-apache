@@ -4,11 +4,13 @@ import org.apache.arrow.vector.VectorSchemaRoot
 import java.io.ByteArrayInputStream
 import org.apache.arrow.vector.ipc.ArrowStreamReader
 
+import zio.DefaultRuntime
+
 import zio.serdes.serdes._
 import zio.serdes.Serdes
 import ArrowUtils._
 
-object ArrowSerdes extends Serdes[ChunkSchema] {
+object ArrowSerdes extends Serdes[ChunkSchema] with DefaultRuntime {
 
   def serialize[A](din: ChunkSchema[A]): BArr = {
 
@@ -26,7 +28,6 @@ object ArrowSerdes extends Serdes[ChunkSchema] {
       root.getFieldVectors.get(i).allocateNew
 
     // Write to vectors
-    // unsafeRun(ZIO.effectTotal(writeVectors(root, data)))
     writeVectors(root, data)
 
     // Write to output stream
