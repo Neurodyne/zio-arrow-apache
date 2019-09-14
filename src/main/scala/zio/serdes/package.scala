@@ -5,6 +5,12 @@ import org.apache.arrow.vector.types.pojo.{ Schema }
 
 import zio.{ Chunk }
 
+final case class ArrConfig(
+  vectors: Int,
+  batches: Int,
+  schema: Schema
+)
+
 package object serdes {
 
   type BArr = Array[Byte]
@@ -13,7 +19,8 @@ package object serdes {
   type ArrStreamReader[A] = ArrowStreamReader
 
   type ChunkSchema[A] = (Chunk[A], Schema)
+  type ChunkArrow[A]  = (Chunk[A], ArrConfig)
 
-  def eqv(x: BArr, y: BArr): Boolean = java.util.Arrays.equals(x, y)
+  // def eqv(x: BArr, y: BArr): Boolean = java.util.Arrays.equals(x, y)
 
 }

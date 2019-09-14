@@ -1,4 +1,4 @@
-package basetest
+package arrow
 
 import org.specs2.Specification
 import zio.{ Chunk, DefaultRuntime }
@@ -21,6 +21,7 @@ class BaseSpec extends Specification with DefaultRuntime {
     work for Arrow Chunk[Int]           $sdArrChunkInt
     work for Arrow Chunk[Float]         $sdArrChunkFloat
     work for Arrow Chunk[Double]        $sdArrChunkDouble
+    throw exception for unknown type    $sdUnknown
     """
 
   def sgBArr = {
@@ -99,6 +100,25 @@ class BaseSpec extends Specification with DefaultRuntime {
     )
 
     val din = Chunk(1.0, -1.0)
+
+    val bytes = ArrowSerdes.serialize((din, testSchema))
+    val dout  = ArrowSerdes.deserialize(bytes)
+
+    val (outChunk, outSchema) = dout
+
+    outChunk === din && outSchema == testSchema
+
+  }
+
+  def sdUnknown = {
+
+    val testSchema = new Schema(
+      asList(
+        new Field("binaryField", FieldType.nullable(new ArrowType.Binary), Collections.emptyList())
+      )
+    )
+
+    val din = Chunk(1, 0)
 
     val bytes = ArrowSerdes.serialize((din, testSchema))
     val dout  = ArrowSerdes.deserialize(bytes)

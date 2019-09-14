@@ -19,12 +19,14 @@ object ArrowSerdes extends Serdes[ChunkSchema] with DefaultRuntime {
 
     // Write setup
     val numBatches = 1
+    val numVectors = 1
+
     data.length // write vector length
 
     //Create a root alloc for this schema
     val root = VectorSchemaRoot.create(schema, alloc)
 
-    for (i <- 0 until numBatches)
+    for (i <- 0 until numVectors)
       root.getFieldVectors.get(i).allocateNew
 
     // Write to vectors
