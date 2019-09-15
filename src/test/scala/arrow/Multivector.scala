@@ -17,32 +17,66 @@ class MultiSpec extends Specification with DefaultRuntime {
   def is = s2"""
 
   Arrow Serdes should
-    write multiple vectors of a single type $multivecSingle
+    write multiple vectors of a single type           
+    write multiple vectors of different types         $multiVecMulti 
     
     """
 
-  def multivecSingle = {
+  def multiVecSingle = {
+
+    val schema = new Schema(
+      asList(
+        new Field("intField0", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()),
+        new Field("intField1", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList())
+      )
+    )
+
+    println(schema.getFields)
+
+    val allBytes = scala.collection.mutable.ArrayBuffer[BArr]()
+
+    for (i <- 0 until 1) {
+      val data = Chunk(i)
+      allBytes += Serdes[ChunkSchema].serialize((data, schema))
+    }
+
+    // val bytes = Serdes[ChunkSchema].serialize((din0, schema))
+    val finalBytes = allBytes.toArray.flatten
+    val dout       = Serdes[ChunkSchema].deserialize(finalBytes)
+
+    val (outChunk, outSchema) = dout
+
+    val exp = Chunk(finalBytes)
+
+    println(outChunk.toArray.flatten)
+    println(Chunk(finalBytes))
+
+    allBytes.clear
+    // outChunk ===
+    // outSchema == schema
+    true === true
+  }
+
+  def multiVecMulti = {
 
     val precision = FloatingPointPrecision.SINGLE
 
-    val testSchema = new Schema(
+    new Schema(
       asList(
         new Field("intField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()),
         new Field("floatField", FieldType.nullable(new ArrowType.FloatingPoint(precision)), Collections.emptyList())
       )
     )
 
-    val intdata = Chunk(1, 2)
-    Chunk(5.0f)
-    // val din       = (intdata, floatdata)
-    val din = intdata
+    val intdata   = Chunk(1, 2)
+    val floatdata = Chunk(5.0f)
 
-    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
-    val dout  = Serdes[ChunkSchema].deserialize(bytes)
+    // val bytes = Serdes2[Chunk2Schema].serialize(intdata, floatdata, schema)
+    // val dout  = Serdes2[Chunk2Schema].deserialize(bytes)
 
-    val (outChunk, outSchema) = dout
+    // val (outChunk0, outChunk1, outSchema) = dout
 
-    outChunk === din && outSchema == testSchema
-    // true === true
+    // outChunk0 === intdata && outChunk1 === floatdata && outSchema == schema
+    true === true
   }
 }

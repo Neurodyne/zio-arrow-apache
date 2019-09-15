@@ -54,18 +54,18 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   def sdArrChunkInt = {
 
-    val testSchema = new Schema(
+    val schema = new Schema(
       asList(new Field("testField", FieldType.nullable(new ArrowType.Int(8, true)), Collections.emptyList()))
     )
 
     val din = Chunk(1, 2, 3, 5)
 
-    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val bytes = Serdes[ChunkSchema].serialize((din, schema))
     val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
-    outChunk === din && outSchema == testSchema
+    outChunk === din && outSchema == schema
 
   }
 
@@ -73,7 +73,7 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val precision = FloatingPointPrecision.SINGLE
 
-    val testSchema = new Schema(
+    val schema = new Schema(
       asList(
         new Field("testField", FieldType.nullable(new ArrowType.FloatingPoint(precision)), Collections.emptyList())
       )
@@ -81,12 +81,12 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1.0f, -1.0f)
 
-    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val bytes = Serdes[ChunkSchema].serialize((din, schema))
     val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
-    outChunk === din && outSchema == testSchema
+    outChunk === din && outSchema == schema
 
   }
 
@@ -94,7 +94,7 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val precision = FloatingPointPrecision.DOUBLE
 
-    val testSchema = new Schema(
+    val schema = new Schema(
       asList(
         new Field("testField", FieldType.nullable(new ArrowType.FloatingPoint(precision)), Collections.emptyList())
       )
@@ -102,18 +102,18 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1.0, -1.0)
 
-    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val bytes = Serdes[ChunkSchema].serialize((din, schema))
     val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
-    outChunk === din && outSchema == testSchema
+    outChunk === din && outSchema == schema
 
   }
 
   def sdUnknown = {
 
-    val testSchema = new Schema(
+    val schema = new Schema(
       asList(
         new Field("binaryField", FieldType.nullable(new ArrowType.Binary), Collections.emptyList())
       )
@@ -121,12 +121,12 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1, 0)
 
-    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val bytes = Serdes[ChunkSchema].serialize((din, schema))
     val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
-    outChunk === din && outSchema == testSchema
+    outChunk === din && outSchema == schema
 
   }
 

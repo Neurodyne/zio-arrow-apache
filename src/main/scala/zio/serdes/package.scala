@@ -18,9 +18,10 @@ package object Types {
   type ArrStreamWriter[A] = ArrowStreamWriter
   type ArrStreamReader[A] = ArrowStreamReader
 
-  type ChunkSchema[A] = (Chunk[A], Schema)
-  type ChunkArrow[A]  = (Chunk[A], ArrConfig)
+  type ChunkArrow[A] = (Chunk[A], ArrConfig)
 
+  type ChunkSchema[A]     = (Chunk[A], Schema)
+  type Chunk2Schema[A, B] = (Chunk[A], Chunk[B], Schema)
   // def eqv(x: BArr, y: BArr): Boolean = java.util.Arrays.equals(x, y)
 
 }

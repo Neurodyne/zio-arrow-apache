@@ -6,13 +6,14 @@ import zio.{ Task, UIO, ZIO, ZManaged }
 import zio.serdes.Types._
 import zio.DefaultRuntime
 
-abstract class Serdes[F[_]] {
+sealed abstract class Serdes[F[_]] {
 
   def serialize[A](din: F[A]): BArr
   def deserialize[A](din: BArr): F[A]
 
 }
 
+// Helper methods for simple object serialization
 object Serdes {
   val rt = new DefaultRuntime {}
 
