@@ -1,11 +1,12 @@
 package zio.serdes.arrow
 
 import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets
 
-import org.apache.arrow.vector.types.Types.MinorType.{ FLOAT4, FLOAT8, TINYINT, VARCHAR }
-import org.apache.arrow.vector.{ Float4Vector, Float8Vector }
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.ArrowStreamWriter
+import org.apache.arrow.vector.types.Types.MinorType.{ FLOAT4, FLOAT8, TINYINT, VARCHAR }
+import org.apache.arrow.vector.{ Float4Vector, Float8Vector }
 import org.apache.arrow.vector.{ FieldVector, TinyIntVector, VarCharVector, VectorSchemaRoot }
 
 import zio.Chunk
@@ -47,8 +48,12 @@ object ArrowUtils {
       case VARCHAR => {
         println("WR VARCHAR vector")
 
-        for (i <- 0 until len)
-          vec.asInstanceOf[VarCharVector].set(i, data(i).asInstanceOf[String])
+        for (i <- 0 until len) {
+          val tmp = data(i).asInstanceOf[String].getBytes(StandardCharsets.UTF_8)
+          // vec.asInstanceOf[VarCharVector].set(i, data(i).asInstanceOf[String].getBytes(StandardCharsets.UTF_8))
+          vec.asInstanceOf[VarCharVector].set(i, tmp)
+        }
+
       }
 
       case _ => throw new Exception(s"Not yet implemented: $vtype")
@@ -108,6 +113,7 @@ object ArrowUtils {
             if (!vec.isNull(i))
               tmp += vec.asInstanceOf[VarCharVector].get(i)
 
+          // println (s"Inside Utils. Buffer 0 : ${tmp(0).toString}")
           tmp
         }
 
