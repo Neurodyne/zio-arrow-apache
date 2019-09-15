@@ -15,7 +15,7 @@ object ArrowUtils {
   val alloc = new RootAllocator(Integer.MAX_VALUE)
 
   // Write to Arrow Vectors
-  def writeVectors[A](root: VectorSchemaRoot, data: Chunk[A]): Unit = {
+  def writeVector[A](root: VectorSchemaRoot, data: Chunk[A]): Unit = {
     val vectors = root.getFieldVectors
     val len     = data.length
 

@@ -5,12 +5,12 @@ import java.io.ByteArrayInputStream
 import org.apache.arrow.vector.ipc.ArrowStreamReader
 
 import zio.serdes.Types._
-import zio.serdes.{ Serdes2 }
+import zio.serdes.Serdes2
 import ArrowUtils._
 
 object Serd2 {
 
-  implicit val Arrow2Serdes: Serdes2[Chunk2Schema] = new Serdes2[Chunk2Schema] {
+  val Arrow2Serdes: Serdes2[Chunk2Schema] = new Serdes2[Chunk2Schema] {
 
     def serialize[A, B](din: Chunk2Schema[A, B]): BArr = {
 
@@ -28,8 +28,8 @@ object Serd2 {
         root.getFieldVectors.get(i).allocateNew
 
       // Write to vectors
-      writeVectors(root, din0)
-      writeVectors(root, din1)
+      writeVector(root, din0)
+      writeVector(root, din1)
 
       // Write to output stream
       writeStream(root, numBatches)
@@ -51,6 +51,8 @@ object Serd2 {
       val out0 = readVector(vec0)
       val out1 = readVector(vec1)
 
+      println(s"out0 = $out0")
+      println(s"out1 = $out1")
       (out0, out1, schema)
 
     }
