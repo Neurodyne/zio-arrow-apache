@@ -4,53 +4,54 @@ import org.apache.arrow.vector.VectorSchemaRoot
 import java.io.ByteArrayInputStream
 import org.apache.arrow.vector.ipc.ArrowStreamReader
 
-import zio.DefaultRuntime
-
-import zio.serdes.serdes._
+import zio.serdes.Types._
 import zio.serdes.Serdes
 import ArrowUtils._
 
-object ArrowSerdes extends Serdes[ChunkSchema] with DefaultRuntime {
+object Serd {
 
-  def serialize[A](din: ChunkSchema[A]): BArr = {
+  implicit val ArrowSerdes: Serdes[ChunkSchema] = new Serdes[ChunkSchema] {
 
-    // Unpack data and schema
-    val (data, schema) = din
+    def serialize[A](din: ChunkSchema[A]): BArr = {
 
-    // Write setup
-    val numBatches = 1
-    val numVectors = 1
+      // Unpack data and schema
+      val (data, schema) = din
 
-    data.length // write vector length
+      // Write setup
+      val numBatches = 1
+      val numVectors = 1
 
-    //Create a root alloc for this schema
-    val root = VectorSchemaRoot.create(schema, alloc)
+      data.length // write vector length
 
-    for (i <- 0 until numVectors)
-      root.getFieldVectors.get(i).allocateNew
+      //Create a root alloc for this schema
+      val root = VectorSchemaRoot.create(schema, alloc)
 
-    // Write to vectors
-    writeVectors(root, data)
+      for (i <- 0 until numVectors)
+        root.getFieldVectors.get(i).allocateNew
 
-    // Write to output stream
-    writeStream(root, numBatches)
+      // Write to vectors
+      writeVectors(root, data)
+
+      // Write to output stream
+      writeStream(root, numBatches)
+
+    }
+
+    def deserialize[A](din: BArr): ChunkSchema[A] = {
+
+      val stream = new ByteArrayInputStream(din)
+      val reader = new ArrowStreamReader(stream, alloc)
+
+      val root   = reader.getVectorSchemaRoot
+      val schema = root.getSchema
+
+      // Read vectors
+      reader.loadNextBatch
+      val out = readVectors(root)
+
+      (out, schema)
+
+    }
 
   }
-
-  def deserialize[A](din: BArr): ChunkSchema[A] = {
-
-    val stream = new ByteArrayInputStream(din)
-    val reader = new ArrowStreamReader(stream, alloc)
-
-    val root   = reader.getVectorSchemaRoot
-    val schema = root.getSchema
-
-    // Read vectors
-    reader.loadNextBatch
-    val out = readVectors(root)
-
-    (out, schema)
-
-  }
-
 }

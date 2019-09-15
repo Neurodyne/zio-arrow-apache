@@ -11,7 +11,7 @@ final case class ArrConfig(
   schema: Schema
 )
 
-package object serdes {
+package object Types {
 
   type BArr = Array[Byte]
 

@@ -1,14 +1,16 @@
 package arrow
 
+import java.util.Arrays.asList
+import java.util.Collections
 import org.specs2.Specification
 import zio.{ Chunk, DefaultRuntime }
 
-import zio.serdes.arrow.ArrowSerdes
-
 import org.apache.arrow.vector.types.pojo.{ ArrowType, Field, FieldType, Schema }
-import java.util.Arrays.asList
-import java.util.Collections
 import org.apache.arrow.vector.types.FloatingPointPrecision
+
+import zio.serdes._
+import zio.serdes.Types._
+import zio.serdes.arrow.Serd._
 
 class MultiSpec extends Specification with DefaultRuntime {
 
@@ -30,13 +32,17 @@ class MultiSpec extends Specification with DefaultRuntime {
       )
     )
 
-    val din = Chunk(1, 2, 3, 5)
+    val intdata = Chunk(1, 2)
+    Chunk(5.0f)
+    // val din       = (intdata, floatdata)
+    val din = intdata
 
-    val bytes = ArrowSerdes.serialize((din, testSchema))
-    val dout  = ArrowSerdes.deserialize(bytes)
+    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
     outChunk === din && outSchema == testSchema
+    // true === true
   }
 }

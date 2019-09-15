@@ -4,7 +4,8 @@ import org.specs2.Specification
 import zio.{ Chunk, DefaultRuntime }
 
 import zio.serdes._
-import zio.serdes.arrow.ArrowSerdes
+import zio.serdes.Types._
+import zio.serdes.arrow.Serd._
 
 import org.apache.arrow.vector.types.pojo.{ ArrowType, Field, FieldType, Schema }
 import java.util.Arrays.asList
@@ -59,8 +60,8 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1, 2, 3, 5)
 
-    val bytes = ArrowSerdes.serialize((din, testSchema))
-    val dout  = ArrowSerdes.deserialize(bytes)
+    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
@@ -80,8 +81,8 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1.0f, -1.0f)
 
-    val bytes = ArrowSerdes.serialize((din, testSchema))
-    val dout  = ArrowSerdes.deserialize(bytes)
+    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
@@ -101,8 +102,8 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1.0, -1.0)
 
-    val bytes = ArrowSerdes.serialize((din, testSchema))
-    val dout  = ArrowSerdes.deserialize(bytes)
+    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 
@@ -120,8 +121,8 @@ class BaseSpec extends Specification with DefaultRuntime {
 
     val din = Chunk(1, 0)
 
-    val bytes = ArrowSerdes.serialize((din, testSchema))
-    val dout  = ArrowSerdes.deserialize(bytes)
+    val bytes = Serdes[ChunkSchema].serialize((din, testSchema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
 
     val (outChunk, outSchema) = dout
 

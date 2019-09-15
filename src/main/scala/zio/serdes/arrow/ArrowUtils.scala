@@ -11,7 +11,7 @@ import org.apache.arrow.vector.TinyIntVector
 
 import zio.Chunk
 
-import zio.serdes.serdes._
+import zio.serdes.Types._
 
 object ArrowUtils {
   val alloc = new RootAllocator(Integer.MAX_VALUE)

@@ -2,7 +2,7 @@ package zio.serdes
 
 import zio.Chunk
 
-import zio.serdes.serdes._
+import zio.serdes.Types._
 import zio.serdes.Serdes._
 
 object ChunkSerdes extends Serdes[Chunk] {

@@ -2,7 +2,7 @@ package zio.serdes
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream }
 
-import zio.serdes.serdes._
+import zio.serdes.Types._
 
 abstract class Serdes[F[_]] {
 
