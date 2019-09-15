@@ -8,7 +8,7 @@ import zio.serdes.Types._
 import zio.serdes.{ Serdes2 }
 import ArrowUtils._
 
-/* object Serd2 {
+object Serd2 {
 
   implicit val Arrow2Serdes: Serdes2[Chunk2Schema] = new Serdes2[Chunk2Schema] {
 
@@ -19,9 +19,7 @@ import ArrowUtils._
 
       // Write setup
       val numBatches = 1
-      val numVectors = 1
-
-      din0.length // write vector length
+      val numVectors = schema.getFields.size
 
       //Create a root alloc for this schema
       val root = VectorSchemaRoot.create(schema, alloc)
@@ -31,6 +29,7 @@ import ArrowUtils._
 
       // Write to vectors
       writeVectors(root, din0)
+      writeVectors(root, din1)
 
       // Write to output stream
       writeStream(root, numBatches)
@@ -44,10 +43,13 @@ import ArrowUtils._
 
       val root   = reader.getVectorSchemaRoot
       val schema = root.getSchema
+      val vec0   = root.getFieldVectors.get(0)
+      val vec1   = root.getFieldVectors.get(1)
 
       // Read vectors
       reader.loadNextBatch
-      val (out0, out1) = readVectors(root)
+      val out0 = readVector(vec0)
+      val out1 = readVector(vec1)
 
       (out0, out1, schema)
 
@@ -55,4 +57,4 @@ import ArrowUtils._
 
   }
 
-} */
+}

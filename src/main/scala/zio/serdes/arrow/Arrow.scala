@@ -44,10 +44,11 @@ object Serd {
 
       val root   = reader.getVectorSchemaRoot
       val schema = root.getSchema
+      val vec0   = root.getFieldVectors.get(0)
 
       // Read vectors
       reader.loadNextBatch
-      val out = readVectors(root)
+      val out = readVector(vec0)
 
       (out, schema)
 

@@ -6,11 +6,9 @@ import org.apache.arrow.vector.types.Types.MinorType.{ FLOAT4, FLOAT8, TINYINT }
 import org.apache.arrow.vector.{ Float4Vector, Float8Vector }
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.ipc.ArrowStreamWriter
-import org.apache.arrow.vector.VectorSchemaRoot
-import org.apache.arrow.vector.TinyIntVector
+import org.apache.arrow.vector.{ FieldVector, TinyIntVector, VectorSchemaRoot }
 
 import zio.Chunk
-
 import zio.serdes.Types._
 
 object ArrowUtils {
@@ -62,12 +60,7 @@ object ArrowUtils {
   }
 
   // Read from Arrow Vectors
-  def readVectors[A](root: VectorSchemaRoot): Chunk[A] = {
-
-    val vectors = root.getFieldVectors
-
-    // val out = vectors.forEach(vec => {
-    val vec = vectors.get(0)
+  def readVector[A](vec: FieldVector): Chunk[A] = {
 
     val out = {
       val vtype = vec.getMinorType
