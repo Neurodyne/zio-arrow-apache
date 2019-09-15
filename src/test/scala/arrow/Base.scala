@@ -22,6 +22,7 @@ class BaseSpec extends Specification with DefaultRuntime {
     work for Arrow Chunk[Int]           $sdArrChunkInt
     work for Arrow Chunk[Float]         $sdArrChunkFloat
     work for Arrow Chunk[Double]        $sdArrChunkDouble
+    work for Arrow Chunk[String]        $sdArrChunkString
     throw exception for unknown type    $sdUnknown
     """
 
@@ -101,6 +102,25 @@ class BaseSpec extends Specification with DefaultRuntime {
     )
 
     val din = Chunk(1.0, -1.0)
+
+    val bytes = Serdes[ChunkSchema].serialize((din, schema))
+    val dout  = Serdes[ChunkSchema].deserialize(bytes)
+
+    val (outChunk, outSchema) = dout
+
+    outChunk === din && outSchema == schema
+
+  }
+
+  def sdArrChunkString = {
+
+    val schema = new Schema(
+      asList(
+        new Field("testField", FieldType.nullable(new ArrowType.Utf8), Collections.emptyList())
+      )
+    )
+
+    val din = Chunk("one", "two")
 
     val bytes = Serdes[ChunkSchema].serialize((din, schema))
     val dout  = Serdes[ChunkSchema].deserialize(bytes)

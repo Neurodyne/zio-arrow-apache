@@ -22,7 +22,8 @@ object Serd2 {
       val numVectors = 1 //schema.getFields.size
 
       //Create a root alloc for this schema
-      val root    = VectorSchemaRoot.create(schema, alloc)
+      val root = VectorSchemaRoot.create(schema, alloc)
+      root.setRowCount(2)
       val vectors = root.getFieldVectors
 
       for (i <- 0 until numVectors)
