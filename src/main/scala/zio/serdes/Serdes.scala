@@ -13,6 +13,13 @@ abstract class Serdes[F[_]] {
 
 }
 
+abstract class Serdes2[F[_, _]] {
+
+  def serialize[A, B](din: F[A, B]): BArr
+  def deserialize[A, B](din: BArr): F[A, B]
+
+}
+
 // Helper methods for simple object serialization
 object Serdes {
   val rt = new DefaultRuntime {}

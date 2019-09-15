@@ -15,52 +15,44 @@ object ArrowUtils {
   val alloc = new RootAllocator(Integer.MAX_VALUE)
 
   // Write to Arrow Vectors
-  def writeVector[A](root: VectorSchemaRoot, data: Chunk[A]): Unit = {
-    val vectors = root.getFieldVectors
-    val len     = data.length
+  def writeVector[A](vec: FieldVector, data: Chunk[A]): Unit = {
+    val len = data.length
 
-    // Update metadata
-    root.setRowCount(len)
+    vec.setValueCount(len)
+    val vtype = vec.getMinorType
 
-    val size = vectors.size
-    println(s"vectors size = $size")
+    vtype match {
 
-    vectors.forEach(vec => {
+      case TINYINT => {
+        println("WR TINYINT vector")
 
-      vec.setValueCount(len)
-      val vtype = vec.getMinorType
-
-      vtype match {
-
-        case TINYINT => {
-          println("WR TINYINT vector")
-
-          for (i <- 0 until len)
-            vec.asInstanceOf[TinyIntVector].set(i, data(i).asInstanceOf[Int])
-        }
-
-        case FLOAT4 => {
-          println("WR FLOAT4 vector")
-
-          for (i <- 0 until len)
-            vec.asInstanceOf[Float4Vector].set(i, data(i).asInstanceOf[Float])
-        }
-
-        case FLOAT8 => {
-          println("WR FLOAT8 vector")
-
-          for (i <- 0 until len)
-            vec.asInstanceOf[Float8Vector].set(i, data(i).asInstanceOf[Double])
-        }
-
-        case _ => throw new Exception(s"Not yet implemented: $vtype")
+        for (i <- 0 until len)
+          vec.asInstanceOf[TinyIntVector].set(i, data(i).asInstanceOf[Int])
       }
 
-    })
+      case FLOAT4 => {
+        println("WR FLOAT4 vector")
+
+        for (i <- 0 until len)
+          vec.asInstanceOf[Float4Vector].set(i, data(i).asInstanceOf[Float])
+      }
+
+      case FLOAT8 => {
+        println("WR FLOAT8 vector")
+
+        for (i <- 0 until len)
+          vec.asInstanceOf[Float8Vector].set(i, data(i).asInstanceOf[Double])
+      }
+
+      case _ => throw new Exception(s"Not yet implemented: $vtype")
+    }
+
   }
 
   // Read from Arrow Vectors
   def readVector[A](vec: FieldVector): Chunk[A] = {
+
+    println(s"input field fector: $vec")
 
     val out = {
       val vtype = vec.getMinorType
@@ -75,6 +67,8 @@ object ArrowUtils {
           for (i <- 0 until count)
             if (!vec.isNull(i))
               tmp += vec.asInstanceOf[TinyIntVector].get(i)
+
+          println(tmp)
           tmp
         }
 

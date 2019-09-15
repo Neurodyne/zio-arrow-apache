@@ -19,17 +19,21 @@ object Serd2 {
 
       // Write setup
       val numBatches = 1
-      val numVectors = schema.getFields.size
+      val numVectors = 1 //schema.getFields.size
 
       //Create a root alloc for this schema
-      val root = VectorSchemaRoot.create(schema, alloc)
+      val root    = VectorSchemaRoot.create(schema, alloc)
+      val vectors = root.getFieldVectors
 
       for (i <- 0 until numVectors)
-        root.getFieldVectors.get(i).allocateNew
+        vectors.get(i).allocateNew
 
       // Write to vectors
-      writeVector(root, din0)
-      writeVector(root, din1)
+      println(s"din0: $din0")
+      println(s"din1: $din1")
+
+      writeVector(vectors.get(0), din0)
+      writeVector(vectors.get(1), din1)
 
       // Write to output stream
       writeStream(root, numBatches)

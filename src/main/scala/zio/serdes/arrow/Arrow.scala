@@ -21,16 +21,19 @@ object Serd {
       val numBatches = 1
       val numVectors = 1
 
-      data.length // write vector length
+      val len = data.length // write vector length
 
       //Create a root alloc for this schema
       val root = VectorSchemaRoot.create(schema, alloc)
+      root.setRowCount(len)
+      val vectors = root.getFieldVectors
 
       for (i <- 0 until numVectors)
-        root.getFieldVectors.get(i).allocateNew
+        vectors.get(i).allocateNew
 
       // Write to vectors
-      writeVectors(root, data)
+
+      vectors.forEach(vec => writeVector(vec, data))
 
       // Write to output stream
       writeStream(root, numBatches)
