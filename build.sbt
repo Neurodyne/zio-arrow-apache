@@ -1,14 +1,16 @@
-val ZioVersion    = "1.0.0-RC12-1"
-val Specs2Version = "4.7.0"
-val ArrowVersion  = "0.14.1"
+val ZioVersion    = "1.0.0-RC15"
+val Specs2Version = "4.7.1"
+val ArrowVersion  = "0.15.0"
 
-resolvers += Resolver.sonatypeRepo("releases")
-resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots")
+)
 
 organization := "Neurodyne"
 name := "zio-serdes"
 version := "0.0.1"
-scalaVersion := "2.12.9"
+scalaVersion := "2.12.10"
 maxErrors := 3
 libraryDependencies ++= Seq(
   "dev.zio"          %% "zio"         % ZioVersion,

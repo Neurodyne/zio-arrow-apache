@@ -1,16 +1,18 @@
-package zio.serdes
+// package zio.serdes
 
-import zio.Chunk
+// import zio.Chunk
 
-import zio.serdes.Types._
-import zio.serdes.Serdes._
+// import zio.serdes.Types._
+// import zio.serdes.Serdes._
 
-object ChunkSerdes extends Serdes[Chunk] {
+// import scala.reflect.ClassTag
 
-  def serialize[A](din: Chunk[A]): BArr =
-    scatter[Array, A](din.toArray).toByteArray
+// object ChunkSerdes extends Serdes[Chunk] {
 
-  def deserialize[A](din: BArr): Chunk[A] =
-    Chunk.fromArray(gather[Array, A](din.toArray))
+//   def serialize[A:ClassTag](din: Chunk[A]): BArr =
+//     scatter[Array, A](din.toArray).toByteArray
 
-}
+//   def deserialize[A](din: BArr): Chunk[A] =
+//     Chunk.fromArray(gather[Array, A](din.toArray))
+
+// }

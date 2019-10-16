@@ -18,7 +18,7 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   ZIO Serdes should
     work for byte array                 $sgBArr
-    work for Chunk                      $sdChunk
+    work for Chunk                      
     work for Arrow Chunk[Int]           $sdArrChunkInt
     work for Arrow Chunk[Float]         $sdArrChunkFloat
     work for Arrow Chunk[Double]        $sdArrChunkDouble
@@ -42,16 +42,16 @@ class BaseSpec extends Specification with DefaultRuntime {
 
   }
 
-  def sdChunk = {
+  // def sdChunk = {
 
-    val arr: Array[Int] = Array(1, 2, 3)
-    val chunk           = Chunk.fromArray(arr)
+  //   val arr: Array[Int] = Array(1, 2, 3)
+  //   val chunk           = Chunk.fromArray(arr)
 
-    val bytes = ChunkSerdes.serialize[Int](chunk)
-    val out   = ChunkSerdes.deserialize[Int](bytes)
+  //   val bytes = ChunkSerdes.serialize[Int](chunk)
+  //   val out   = ChunkSerdes.deserialize[Int](bytes)
 
-    chunk === out
-  }
+  //   chunk === out
+  // }
 
   def sdArrChunkInt = {
 
